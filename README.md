@@ -27,7 +27,7 @@ This is the frontend for the SikaiVerse Project. It's a React application built 
 
 ## Activity Log
 
-### 2025/12/08
+### 2025/12/28
 
     - Created the base project and readme 
     - Pushed the base project to the git repository
