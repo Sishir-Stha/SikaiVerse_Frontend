@@ -62,16 +62,15 @@ export default function SignupPage() {
 
     try {
       const signupData: SignupRequest = {
-        fullName: formData.Fullname, // Map Fullname to fullName as per API
+        fullName: formData.Fullname,
         email: formData.email,
         password: formData.password,
-        role: 'student', // Default to student
+        role: 'student', 
       }
 
       await auth.signup(signupData)
 
       success(`Account created successfully! Welcome, ${formData.Fullname}`)
-      // Redirect to login
       setTimeout(() => {
         navigate('/login', { state: { email: formData.email } })
       }, 1500)
@@ -89,7 +88,6 @@ export default function SignupPage() {
       ...prev,
       [name]: value,
     }))
-    // Clear error for this field when user starts typing
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,

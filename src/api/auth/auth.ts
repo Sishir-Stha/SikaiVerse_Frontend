@@ -6,6 +6,7 @@ export interface LoginRequest {
 export interface LoginResponse {
   success: string
   data: {
+    userId: number
     role: 'admin' | 'student' | 'instructor'
     token: string
     username: string

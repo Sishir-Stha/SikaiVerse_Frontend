@@ -38,3 +38,8 @@ This is the frontend for the SikaiVerse Project. It's a React application built 
     - Created api folder and integrated the api for log in and sign up in auth.ts 
     - added Landing Page , Login and signup page
     - Make components like ui :- Sidebar, Topbar, authContext, Use-Toast,badge, button, card, input etc
+
+3. **2026/01/**
+    - created pages for admin, student, and instructor dashboard
+    -added the api endpoints of each dashboard
+    -added the user list api to admin for listing the user as well
