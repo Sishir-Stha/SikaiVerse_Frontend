@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import Sidebar from '../../components/Sidebar'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card'
 import { useAuth } from '../../context/AuthContext'
-import { getInstructorDashboardInfo, type GetInstructorDashboardResponse } from '../../api/Instructor/instructor'
+import { getInstructorDashboardInfo, type GetInstructorDashboardResponse } from '../../api/Instructor/instructorDashboard'
 import { BookOpen, Users, Eye, BarChart3 } from 'lucide-react'
 
 export default function InstructorDashboard() {
@@ -11,23 +12,29 @@ export default function InstructorDashboard() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    const loadDashboardData = async () => {
-      try {
-        const response = await getInstructorDashboardInfo({ userId: user!.id })
-        setDashboardData(response.data)
-      } catch (error) {
-        console.error('Failed to load instructor dashboard data:', error)
-        setError('Failed to load dashboard information')
-      } finally {
-        setIsLoading(false)
-      }
+useEffect(() => {
+  const loadDashboardData = async () => {
+    try {
+      const response = await getInstructorDashboardInfo({ userId: user!.id })
+      setDashboardData(response.data)
+    } catch (err) {
+      console.error('Failed to load instructor dashboard data:', err)
+      // Set default zeroed dashboard data instead of showing an error
+      setDashboardData({
+        totalCourse: 0,
+        totalStudents: 0,
+        totalModule: 0,
+        totalLesson: 0,
+      })
+    } finally {
+      setIsLoading(false)
     }
+  }
 
-    if (user) {
-      loadDashboardData()
-    }
-  }, [user])
+  if (user) {
+    loadDashboardData()
+  }
+}, [user])
 
   const stats = dashboardData ? [
     { label: 'Total Courses', value: dashboardData.totalCourse.toString(), subtitle: 'Courses created', icon: BookOpen },
@@ -37,8 +44,12 @@ export default function InstructorDashboard() {
   ] : []
 
   return (
-    <div className="min-h-screen bg-background bg-gradient-to-br from-purple-50 via-background to-blue-50 dark:from-purple-950/20 dark:via-background dark:to-blue-950/20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="flex min-h-screen bg-background">
+      {/* Sidebar */}
+      <Sidebar />
+
+      {/* Main content */}
+      <div className="flex-1 p-6 md:p-12 overflow-auto">
         {/* Header */}
         <div className="mb-8 animate-fade-in-up">
           <h1 className="text-4xl font-bold mb-2">Instructor Dashboard</h1>
@@ -88,7 +99,7 @@ export default function InstructorDashboard() {
           )}
         </div>
 
-        {/* Quick Actions - Exact same as Admin */}
+        {/* Quick Actions */}
         <Card className="mb-12 card-enhanced animate-stagger-1">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -114,16 +125,15 @@ export default function InstructorDashboard() {
           </CardContent>
         </Card>
 
-        {/* Note: User Management section from AdminDashboard is explicitly excluded here */}
-        
+        {/* Instructor Workspace Info */}
         <Card className="card-enhanced animate-stagger-2">
           <CardHeader>
             <CardTitle>Instructor Workspace</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground">
-              You have administrative access to manage all courses, modules, and lessons. 
-              The User Management section is restricted to Platform Administrators.
+              You have administrative access to manage all your courses, modules, and lessons.
+              User Management is restricted to Platform Administrators.
             </p>
           </CardContent>
         </Card>

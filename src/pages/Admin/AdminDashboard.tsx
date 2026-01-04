@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import Sidebar from '../../components/Sidebar'
 import { Button } from '../../components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card'
 import { useAuth } from '../../context/AuthContext'
@@ -7,11 +8,10 @@ import {
   getAdminDashboardInfo,
   getUserList,
   type GetAdminDashboardResponse,
-} from '../../api/Admin/admin'
+} from '../../api/Admin/adminDashboard'
 import { Plus, BookOpen, Users, Eye, BarChart3 } from 'lucide-react'
 import DeleteConfirmDialog from '../../components/DeleteConfirmDialog'
 import UserEditPanel from '../../components/UserEditPanel'
-
 
 interface User {
   id: string
@@ -43,22 +43,29 @@ export default function AdminDashboard() {
 
   // Load dashboard stats
   useEffect(() => {
-    const loadDashboardData = async () => {
-      try {
-        const response = await getAdminDashboardInfo()
-        setDashboardData(response.data)
-      } catch (err) {
-        console.error(err)
-        setError('Failed to load dashboard information')
-      } finally {
-        setIsLoading(false)
-      }
+  const loadDashboardData = async () => {
+    try {
+      const response = await getAdminDashboardInfo()
+      setDashboardData(response.data)
+    } catch (err) {
+      console.error('Failed to load admin dashboard:', err)
+      // Use default zeroed data instead of showing an error
+      setDashboardData({
+        totalCourse: 0,
+        totalStudents: 0,
+        totalModule: 0,
+        totalLesson: 0,
+      })
+    } finally {
+      setIsLoading(false)
     }
+  }
 
-    if (user) {
-      loadDashboardData()
-    }
-  }, [user])
+  if (user) {
+    loadDashboardData()
+  }
+}, [user])
+
 
   // Load users
   useEffect(() => {
@@ -115,7 +122,7 @@ export default function AdminDashboard() {
       ]
     : []
 
-// handelling the user edit, add, delete actions
+  // User actions
   const handleEditUser = (user: User) => {
     setSelectedUser(user)
     setEditPanelOpen(true)
@@ -131,12 +138,11 @@ export default function AdminDashboard() {
     try {
       await new Promise(resolve => setTimeout(resolve, 500))
       if (selectedUser?.id) {
-        // Updating existing user
-        setUsers(users.map(u => u.id === selectedUser.id ? { ...formData, id: selectedUser.id } : u))
+        setUsers(users.map(u => (u.id === selectedUser.id ? { ...formData, id: selectedUser.id } : u)))
       } else {
         setUsers([...users, { ...formData, id: Date.now().toString() }])
       }
-      
+
       setEditPanelOpen(false)
       setSelectedUser(null)
     } finally {
@@ -151,7 +157,7 @@ export default function AdminDashboard() {
 
   const confirmDeleteUser = async () => {
     if (!userToDelete) return
-    
+
     setIsLoading(true)
     try {
       await new Promise(resolve => setTimeout(resolve, 500))
@@ -162,10 +168,14 @@ export default function AdminDashboard() {
       setIsLoading(false)
     }
   }
-  return (
-    <div className="min-h-screen bg-background bg-gradient-to-br from-purple-50 via-background to-blue-50 dark:from-purple-950/20 dark:via-background dark:to-blue-950/20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
 
+  return (
+    <div className="flex min-h-screen bg-background">
+      {/* Sidebar */}
+      <Sidebar />
+
+      {/* Main content */}
+      <div className="flex-1 p-6 md:p-12 overflow-auto">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-2">Admin Dashboard</h1>
@@ -231,7 +241,8 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
 
-    <Card className="card-enhanced animate-stagger-2">
+        {/* User Management */}
+        <Card className="card-enhanced animate-stagger-2">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2">
@@ -258,22 +269,25 @@ export default function AdminDashboard() {
                 </thead>
                 <tbody>
                   {users.map((user, idx) => (
-                    <tr key={user.id} className={`border-b border-border hover:bg-muted/50 transition-all duration-300 animate-stagger-${(idx % 3) + 1}`}>
-                       <td className="py-2">{user.name}</td>
-                        <td className="py-2">{user.email}</td>
-                        <td className="py-2">{user.role}</td>
-                        <td className="py-2 px-4">{user.status}</td>
+                    <tr
+                      key={user.id}
+                      className={`border-b border-border hover:bg-muted/50 transition-all duration-300 animate-stagger-${(idx % 3) + 1}`}
+                    >
+                      <td className="py-2">{user.name}</td>
+                      <td className="py-2">{user.email}</td>
+                      <td className="py-2">{user.role}</td>
+                      <td className="py-2 px-4">{user.status}</td>
                       <td className="py-3 px-4 flex gap-2">
-                        <Button 
-                          variant="ghost" 
+                        <Button
+                          variant="ghost"
                           size="sm"
                           onClick={() => handleEditUser(user)}
                           className="transition-all duration-200 hover:bg-blue-100 dark:hover:bg-blue-900"
                         >
                           Edit
                         </Button>
-                        <Button 
-                          variant="ghost" 
+                        <Button
+                          variant="ghost"
                           size="sm"
                           onClick={() => handleDeleteUser(user)}
                           className="transition-all duration-200 hover:bg-red-100 dark:hover:bg-red-900 text-red-600 dark:text-red-400"
@@ -288,7 +302,8 @@ export default function AdminDashboard() {
             </div>
           </CardContent>
         </Card>
-    {/* Edit Panel */}
+
+        {/* Edit Panel */}
         <UserEditPanel
           isOpen={editPanelOpen}
           user={selectedUser}

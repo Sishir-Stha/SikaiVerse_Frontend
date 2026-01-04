@@ -25,6 +25,13 @@ export interface Module {
   lessons: Lesson[]
 }
 
+export interface ChatMessage {
+  id: string
+  role: 'user' | 'assistant'
+  content: string
+  timestamp: string
+}
+
 export interface Course {
   id: string
   title: string
@@ -38,6 +45,16 @@ export interface Course {
   image: string
   modules: Module[]
   createdAt: string
+}
+
+export interface BrowseCourses {
+  courseId: number
+  title: string
+  description: string
+  image: string
+  instructor: string
+  rating: number
+  totalStudents: number
 }
 
 export interface Progress {

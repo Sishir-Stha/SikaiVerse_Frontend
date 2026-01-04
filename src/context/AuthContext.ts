@@ -1,13 +1,17 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import type { ReactNode } from 'react'
-import { login, signup } from '../api/auth/auth'
-import type { LoginRequest, LoginResponse, SignupRequest } from '../api/auth/auth'
+import { login, signup } from '../api/Auth/auth'
+import type { LoginRequest, LoginResponse, SignupRequest } from '../api/Auth/auth'
 
 interface User {
   id: number
   username: string
+  name?: string        
   role: 'admin' | 'student' | 'instructor'
   email?: string
+  avatar?: string
+  phone?: string
+  address?: string 
 }
 
 interface AuthContextType {
@@ -16,6 +20,8 @@ interface AuthContextType {
   login: (credentials: LoginRequest) => Promise<'admin' | 'student' | 'instructor'>
   signup: (userData: SignupRequest) => Promise<void>
   logout: () => void
+  updateProfile: (updates: Partial<User>) => Promise<void>
+  resetPassword: (newPassword: string) => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -109,6 +115,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     login: handleLogin,
     signup: handleSignup,
     logout: handleLogout,
+    updateProfile: function (updates: Partial<User>): Promise<void> {
+      throw new Error('Function not implemented.')
+    },
+    resetPassword: function (newPassword: string): Promise<void> {
+      throw new Error('Function not implemented.')
+    }
   }
 
   return React.createElement(AuthContext.Provider, { value }, children)
