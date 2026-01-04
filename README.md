@@ -44,8 +44,13 @@ This is the frontend for the SikaiVerse Project. It's a React application built 
     - added the api endpoints of each dashboard
     - added the user list api to admin for listing the user as well
 
-4. **2026/01/04**
+4. **2026/01/03**
     - created a browser page to browser the course and enroll integrated with the api also the filter
     - Added the chatbot currently with dummy data just a feild in frontend api to be integrated in last of project
     - added the course page and course api of all the role i.e admin , student and instructor
     - added the side bar and the option according to the role i.e role management
+
+5. **2026/01/04**
+    - created the profile page form all student, admin and intructor also integrated to fecth and update it although the password update feature is yet not there
+    - complete last commit of the day profile page complete with update feature and api integrated as well 
+    - started working on discussion page working on backend to complete
