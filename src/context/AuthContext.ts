@@ -1,20 +1,27 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import type { ReactNode } from 'react'
-import { login, signup } from '../api/auth/auth'
-import type { LoginRequest, LoginResponse, SignupRequest } from '../api/auth/auth'
+import { login, signup } from '../api/Auth/auth'
+import type { LoginRequest, LoginResponse, SignupRequest } from '../api/Auth/auth'
 
 interface User {
+  id: number
   username: string
+  name?: string        
   role: 'admin' | 'student' | 'instructor'
   email?: string
+  avatar?: string
+  phone?: string
+  address?: string 
 }
 
 interface AuthContextType {
   isAuthenticated: boolean
   user: User | null
-  login: (credentials: LoginRequest) => Promise<void>
+  login: (credentials: LoginRequest) => Promise<'admin' | 'student' | 'instructor'>
   signup: (userData: SignupRequest) => Promise<void>
   logout: () => void
+  updateProfile: (updates: Partial<User>) => Promise<void>
+  resetPassword: (newPassword: string) => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -36,20 +43,35 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null)
 
   useEffect(() => {
-    // Check for stored token on mount
+    // Checking the token stored
     const token = localStorage.getItem('token')
     const storedUser = localStorage.getItem('user')
-    if (token && storedUser) {
-      setIsAuthenticated(true)
-      setUser(JSON.parse(storedUser))
+    const loginTime = localStorage.getItem('loginTime')
+    
+    if (token && storedUser && loginTime) {
+      //checking if the token in expired or not
+      const currentTime = Date.now()
+      const tokenAge = currentTime - parseInt(loginTime)
+      const thirtyMinutes = 30 * 60 * 1000
+      
+      if (tokenAge < thirtyMinutes) {
+        setIsAuthenticated(true)
+        setUser(JSON.parse(storedUser))
+      } else {
+        // if Token is expired, clearing the stored data
+        localStorage.removeItem('token')
+        localStorage.removeItem('user')
+        localStorage.removeItem('loginTime')
+      }
     }
   }, [])
 
-  const handleLogin = async (credentials: LoginRequest) => {
+  const handleLogin = async (credentials: LoginRequest): Promise<'admin' | 'student' | 'instructor'> => {
     try {
       const response: LoginResponse = await login(credentials)
       if (response.success === 'true') {
         const userData: User = {
+          id: response.data.userId,
           username: response.data.username,
           role: response.data.role,
           email: credentials.email
@@ -58,6 +80,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setUser(userData)
         localStorage.setItem('token', response.data.token)
         localStorage.setItem('user', JSON.stringify(userData))
+        localStorage.setItem('loginTime', Date.now().toString())
+        return response.data.role
       } else {
         throw new Error('Login failed')
       }
@@ -72,7 +96,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (!response.success) {
         throw new Error('Signup failed')
       }
-      // Signup successful, but do not log in automatically
     } catch (error) {
       throw error
     }
@@ -83,6 +106,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setUser(null)
     localStorage.removeItem('token')
     localStorage.removeItem('user')
+    localStorage.removeItem('loginTime')
   }
 
   const value: AuthContextType = {
@@ -91,6 +115,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     login: handleLogin,
     signup: handleSignup,
     logout: handleLogout,
+    updateProfile: function (updates: Partial<User>): Promise<void> {
+      throw new Error('Function not implemented.')
+    },
+    resetPassword: function (newPassword: string): Promise<void> {
+      throw new Error('Function not implemented.')
+    }
   }
 
   return React.createElement(AuthContext.Provider, { value }, children)

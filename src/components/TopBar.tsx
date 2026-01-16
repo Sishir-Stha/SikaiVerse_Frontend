@@ -26,7 +26,7 @@ export default function TopBar() {
 
   const handleDashboard = () => {
     setShowProfileMenu(false)
-    const dashboardPath = user?.role === 'admin' ? '/admin' : user?.role === 'instructor' ? '/instructor' : '/dashboard'
+    const dashboardPath = user?.role === 'admin' ? '/admin/dashboard' : user?.role === 'instructor' ? '/instructor/dashboard' : '/student/dashboard'
     navigate(dashboardPath)
   }
 
@@ -50,7 +50,6 @@ export default function TopBar() {
   return (
     <div className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between gap-4">
-        {/* Logo - Clickable Home Button */}
         <button
           onClick={() => navigate('/')}
           className="flex items-center gap-2 hover:opacity-80 transition-opacity flex-shrink-0"
@@ -59,7 +58,6 @@ export default function TopBar() {
           <span className="text-2xl font-bold">Sikai Verse</span>
         </button>
 
-        {/* Search Bar - Center */}
         <div className="hidden md:flex flex-1 max-w-md relative">
           <Search className="absolute left-4 top-3 text-muted-foreground" size={20} />
           <Input
@@ -70,8 +68,6 @@ export default function TopBar() {
             className="pl-12 h-10 text-sm rounded-full"
           />
         </div>
-
-        {/* Right Side - Notifications, Profile, Auth */}
         <div className="flex gap-4 items-center flex-shrink-0">
           {isAuthenticated && (
             <>

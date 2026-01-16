@@ -84,7 +84,7 @@ export default function LoginPage() {
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white transition-all duration-200"
                   disabled={isLoading}
                 >
-                  {isLoading ? 'Loging in...' : 'Log In'}
+                  {isLoading ? 'Logging in...' : 'Log In'}
                 </Button>
               </div>
             </form>
