@@ -9,9 +9,11 @@ import StudentProfile from './pages/Student/StudentProfile'
 import InstructorDashboard from './pages/Instructor/InstructorDashboard'
 import InstructorCourses from './pages/Instructor/InstructorCouse'
 import InstructorProfile from './pages/Instructor/InstructorProfile'
+import InstructorDiscussion from './pages/Instructor/InstructorDiscussion'
 import AdminDashboard from './pages/Admin/AdminDashboard'
 import AdminCourses from './pages/Admin/AdminCourses'
 import AdminProfile from './pages/Admin/AdminProfile'
+import AdminDiscussion from './pages/Admin/AdminDisussion'
 import BrowseCoursesPage from './pages/Landing/BrowseCoursesPage'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import Chatbot from './components/Chatbot'
@@ -34,9 +36,11 @@ function AppLayout() {
           <Route path='/admin/dashboard' element={isAuthenticated && user?.role === 'admin' ? <AdminDashboard /> : <Navigate to="/login" replace />} />
           <Route path='/admin/courses' element={isAuthenticated && user?.role === 'admin' ? <AdminCourses /> : <Navigate to="/login" replace />} />   
           <Route path='/admin/profile' element={isAuthenticated && user?.role === 'admin' ? <AdminProfile /> : <Navigate to="/login" replace />} />   
+          <Route path='/admin/discussions' element={isAuthenticated && user?.role === 'admin' ? <AdminDiscussion /> : <Navigate to="/login" replace />} />
           <Route path='/instructor/dashboard' element={isAuthenticated && user?.role === 'instructor' ? <InstructorDashboard /> : <Navigate to="/login" replace />} />
           <Route path='/instructor/courses' element={isAuthenticated && user?.role === 'instructor' ? <InstructorCourses /> : <Navigate to="/login" replace />} />
           <Route path='/instructor/profile' element={isAuthenticated && user?.role === 'instructor' ? <InstructorProfile /> : <Navigate to="/login" replace />} />
+          <Route path='/instructor/discussions' element={isAuthenticated && user?.role === 'instructor' ? <InstructorDiscussion /> : <Navigate to="/login" replace />} />
         </Routes>
           {showChatbot && <Chatbot />}
         <Toaster />

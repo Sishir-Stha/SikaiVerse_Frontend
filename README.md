@@ -54,3 +54,7 @@ This is the frontend for the SikaiVerse Project. It's a React application built 
     - created the profile page form all student, admin and intructor also integrated to fecth and update it although the password update feature is yet not there
     - complete last commit of the day profile page complete with update feature and api integrated as well 
     - started working on discussion page working on backend to complete
+
+6. **2026/01/16**
+    - created the discussion page for instructor and admin also integrated to fetch the course list and the discussion post and replies 
+    - the insertion and like and other things has not been created yet

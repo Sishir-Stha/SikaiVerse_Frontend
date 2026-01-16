@@ -1,0 +1,456 @@
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import Sidebar from '../../components/Sidebar'
+import { Button } from '../../components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card'
+import { Input } from '../../components/ui/input'
+import { Badge } from '../../components/ui/badge'
+import { useToast } from '../../hooks/use-toast'
+import { useAuth } from '../../context/AuthContext'
+import { ArrowLeft, MessageCircle, Send, Heart, User } from 'lucide-react'
+import {
+  getCourseList,
+  getDiscussion,
+  type CourseList,
+  type Discussion,
+  type GetCourseListRequest,
+  type GetDiscussionRequest
+} from '../../api/Instructor/instructorDiscussion'
+
+export default function InstructorDiscussionsPage() {
+  const navigate = useNavigate()
+  const { success, error } = useToast()
+  const { user } = useAuth()
+  
+  // State
+  const [courses, setCourses] = useState<CourseList[]>([])
+  const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null)
+  const [discussions, setDiscussions] = useState<Discussion[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [isLoadingDiscussions, setIsLoadingDiscussions] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [replyingToPostId, setReplyingToPostId] = useState<number | null>(null)
+  const [instructorReplyContent, setInstructorReplyContent] = useState('')
+
+  // Load courses on mount
+  useEffect(() => {
+    let isMounted = true
+
+    const loadCourses = async () => {
+      if (!user) return
+      
+      try {
+        const request: GetCourseListRequest = { userId: user.id }
+        const response = await getCourseList(request)
+        
+        console.log('Course list response:', response)
+
+        if (!isMounted) return
+
+        if (response.success === 'true') {
+          setCourses(response.data)
+        } else {
+          console.error('API returned failure:', response)
+          error('Failed to load courses')
+        }
+      } catch (err) {
+        console.error('Failed to load courses:', err)
+        if (isMounted) {
+          error('Failed to load courses')
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false)
+        }
+      }
+    }
+
+    loadCourses()
+
+    return () => {
+      isMounted = false
+    }
+  }, [user])
+
+  // Handle course selection
+  const handleSelectCourse = async (courseId: number) => {
+    setSelectedCourseId(courseId)
+    setIsLoadingDiscussions(true)
+    
+    try {
+      const request: GetDiscussionRequest = { courseId }
+      const response = await getDiscussion(request)
+
+      if (response.success === 'true') {
+        setDiscussions(response.data)
+      } else {
+        error('Failed to load discussions')
+        setDiscussions([])
+      }
+    } catch (err) {
+      console.error('Failed to load discussions:', err)
+      error('Failed to load discussions')
+      setDiscussions([])
+    } finally {
+      setIsLoadingDiscussions(false)
+    }
+  }
+
+  // Handle instructor reply
+  const handleInstructorReply = async (postId: number) => {
+    if (!instructorReplyContent.trim() || !selectedCourseId || !user) return
+
+    try {
+      // TODO: Implement addInstructorReply API call
+      console.log('Posting reply to discussion:', postId, instructorReplyContent)
+      
+      success('Instructor reply posted successfully!')
+      setInstructorReplyContent('')
+      setReplyingToPostId(null)
+      
+      // Refresh discussions after posting
+      await handleSelectCourse(selectedCourseId)
+    } catch (err) {
+      console.error('Failed to post reply:', err)
+      error('Failed to post reply')
+    }
+  }
+
+  // Filter courses by search query
+  const filteredCourses = courses.filter(c =>
+    c.courseTitle.toLowerCase().includes(searchQuery.toLowerCase())
+  )
+
+  // Get selected course title
+  const selectedCourseTitle = courses.find(c => c.courseId === selectedCourseId)?.courseTitle
+
+  // Helper function to format date
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  }
+
+  // Helper function to get initials
+  const getInitials = (name: string) => {
+    if (!name) return 'U'
+    return name
+      .split(' ')
+      .map(n => n.charAt(0))
+      .join('')
+      .toUpperCase()
+      .slice(0, 2)
+  }
+
+  // Helper function to get role badge color
+  const getRoleBadgeVariant = (role: string) => {
+    switch (role?.toLowerCase()) {
+      case 'instructor':
+        return 'default'
+      case 'student':
+        return 'secondary'
+      case 'admin':
+        return 'destructive'
+      default:
+        return 'outline'
+    }
+  }
+
+  return (
+    <div className="flex min-h-screen bg-background">
+      {/* Sidebar */}
+      <Sidebar />
+
+      {/* Main Content */}
+      <div className="flex-1 p-6 md:p-12 overflow-auto">
+        {/* Header */}
+        <div className="mb-8 animate-fade-in-up">
+          <div className="flex items-center gap-3 mb-2">
+            <MessageCircle size={32} className="text-primary" />
+            <h1 className="text-4xl font-bold">Discussion Management</h1>
+          </div>
+          <p className="text-muted-foreground">
+            Manage course discussions and respond to student questions
+          </p>
+        </div>
+
+        {/* Loading State */}
+        {isLoading ? (
+          <div className="grid md:grid-cols-3 gap-6">
+            <Card className="md:col-span-1 animate-pulse">
+              <CardHeader>
+                <div className="h-5 bg-muted rounded w-24 mb-2"></div>
+                <div className="h-4 bg-muted rounded w-40"></div>
+              </CardHeader>
+              <CardContent>
+                <div className="h-10 bg-muted rounded mb-4"></div>
+                <div className="space-y-2">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <div key={i} className="h-16 bg-muted rounded"></div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="md:col-span-2 animate-pulse">
+              <CardContent className="pt-12 pb-12">
+                <div className="h-12 w-12 bg-muted rounded-full mx-auto mb-4"></div>
+                <div className="h-4 bg-muted rounded w-48 mx-auto"></div>
+              </CardContent>
+            </Card>
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-3 gap-6">
+            {/* Course List Sidebar */}
+            <div className="md:col-span-1">
+              <Card className="card-enhanced animate-stagger-1">
+                <CardHeader>
+                  <CardTitle className="text-lg">Your Courses</CardTitle>
+                  <CardDescription>Select a course to view discussions</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {/* Search */}
+                  <Input
+                    placeholder="Search courses..."
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    className="mb-4"
+                  />
+
+                  {/* Course List */}
+                  {filteredCourses.length === 0 ? (
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                      {courses.length === 0 ? 'No courses available' : 'No courses found'}
+                    </p>
+                  ) : (
+                    <div className="space-y-2 max-h-[60vh] overflow-y-auto">
+                      {filteredCourses.map((course) => (
+                        <button
+                          key={course.courseId}
+                          onClick={() => handleSelectCourse(course.courseId)}
+                          className={`w-full text-left p-3 rounded-lg border transition-all duration-300 hover:shadow-md ${
+                            selectedCourseId === course.courseId
+                              ? 'border-primary bg-primary/10'
+                              : 'border-border hover:border-primary hover:bg-muted'
+                          }`}
+                        >
+                          <p className="font-medium text-sm">{course.courseTitle}</p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                          {course.noOfLessons} lessons 
+                          </p>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Discussions View */}
+            <div className="md:col-span-2">
+              {!selectedCourseId ? (
+                <Card className="card-enhanced animate-stagger-2">
+                  <CardContent className="pt-12 text-center pb-12">
+                    <MessageCircle
+                      size={48}
+                      className="mx-auto mb-4 text-muted-foreground opacity-50"
+                    />
+                    <p className="text-muted-foreground mb-2">
+                      Select a course to view discussions
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Choose a course from the list on the left
+                    </p>
+                  </CardContent>
+                </Card>
+              ) : isLoadingDiscussions ? (
+                <Card className="card-enhanced">
+                  <CardContent className="pt-12 text-center pb-12">
+                    <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+                    <p className="text-muted-foreground">Loading discussions...</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="space-y-4 animate-fade-in-up">
+                  {/* Course Header */}
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="text-2xl font-bold">{selectedCourseTitle}</h2>
+                      <p className="text-muted-foreground">
+                        {discussions.length} discussion{discussions.length !== 1 ? 's' : ''}
+                      </p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setSelectedCourseId(null)
+                        setDiscussions([])
+                      }}
+                      className="gap-2"
+                    >
+                      <ArrowLeft size={18} />
+                      Back
+                    </Button>
+                  </div>
+
+                  {/* Discussions List */}
+                  {discussions.length === 0 ? (
+                    <Card className="card-enhanced">
+                      <CardContent className="pt-12 text-center pb-12">
+                        <MessageCircle
+                          size={48}
+                          className="mx-auto mb-4 text-muted-foreground opacity-50"
+                        />
+                        <p className="text-muted-foreground">No discussions yet</p>
+                        <p className="text-sm text-muted-foreground mt-2">
+                          Students haven't started any discussions for this course
+                        </p>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    <div className="space-y-4">
+                      {discussions.map((post) => (
+                        <Card key={post.postId} className="card-enhanced">
+                          <CardHeader>
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-3 mb-2">
+                                  {/* User Avatar */}
+                                  <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                                    <span className="text-sm font-semibold text-primary">
+                                      {getInitials(post.postUserFullname)}
+                                    </span>
+                                  </div>
+                                  <div>
+                                    <div className="flex items-center gap-2">
+                                      <p className="font-medium">{post.postUserFullname}</p>
+                                      <Badge variant={getRoleBadgeVariant(post.postUserRole)} className="text-xs capitalize">
+                                        {post.postUserRole}
+                                      </Badge>
+                                    </div>
+                                    <p className="text-xs text-muted-foreground">
+                                      {formatDate(post.postCreatedAt)}
+                                    </p>
+                                  </div>
+                                </div>
+                                {/* Post Title */}
+                                <CardTitle className="text-lg mt-3">{post.postTitle}</CardTitle>
+                              </div>
+                              <div className="flex items-center gap-2 text-muted-foreground">
+                                <Heart size={18} className="text-red-400" />
+                                <span className="text-sm">{post.postLikes}</span>
+                              </div>
+                            </div>
+                          </CardHeader>
+
+                          <CardContent className="space-y-4">
+                            {/* Post Content */}
+                            <p className="text-foreground whitespace-pre-wrap">
+                              {post.postContent}
+                            </p>
+
+                            {/* Replies Section */}
+                            {post.repliesDataList && post.repliesDataList.length > 0 && (
+                              <div className="mt-4 pt-4 border-t border-border">
+                                <p className="text-sm font-medium mb-3 flex items-center gap-2">
+                                  <MessageCircle size={16} />
+                                  {post.repliesDataList.length} {post.repliesDataList.length === 1 ? 'Reply' : 'Replies'}
+                                </p>
+                                <div className="pl-4 border-l-2 border-border space-y-4">
+                                  {post.repliesDataList.map(reply => (
+                                    <div key={reply.replyId} className="bg-muted/30 rounded-lg p-3">
+                                      <div className="flex items-center gap-2 mb-2">
+                                        <div className="w-8 h-8 rounded-full bg-secondary/50 flex items-center justify-center">
+                                          <span className="text-xs font-semibold">
+                                            {getInitials(reply.replyUserFullname)}
+                                          </span>
+                                        </div>
+                                        <div className="flex-1">
+                                          <div className="flex items-center gap-2">
+                                            <p className="font-medium text-sm">{reply.replyUserFullname}</p>
+                                            <Badge variant={getRoleBadgeVariant(reply.replyUserRole)} className="text-xs capitalize">
+                                              {reply.replyUserRole}
+                                            </Badge>
+                                          </div>
+                                          <p className="text-xs text-muted-foreground">
+                                            {formatDate(reply.replyCreatedAt)}
+                                          </p>
+                                        </div>
+                                        <div className="flex items-center gap-1 text-muted-foreground">
+                                          <Heart size={14} className="text-red-400" />
+                                          <span className="text-xs">{reply.replyLikes}</span>
+                                        </div>
+                                      </div>
+                                      <p className="text-sm text-foreground">{reply.replyContent}</p>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Instructor Reply Form */}
+                            {replyingToPostId === post.postId ? (
+                              <div className="mt-4 space-y-3 p-4 bg-muted/50 rounded-lg border border-border">
+                                <div className="flex items-center gap-2">
+                                  <Badge variant="default" className="text-xs">
+                                    Instructor
+                                  </Badge>
+                                  <p className="text-sm font-medium">Post Your Reply</p>
+                                </div>
+                                <textarea
+                                  placeholder="Write your instructor response..."
+                                  value={instructorReplyContent}
+                                  onChange={e => setInstructorReplyContent(e.target.value)}
+                                  className="w-full p-3 border border-border rounded-md bg-background text-foreground text-sm min-h-24 resize-y focus:outline-none focus:ring-2 focus:ring-primary"
+                                  autoFocus
+                                />
+                                <div className="flex gap-2">
+                                  <Button
+                                    size="sm"
+                                    onClick={() => handleInstructorReply(post.postId)}
+                                    disabled={!instructorReplyContent.trim()}
+                                    className="gap-2"
+                                  >
+                                    <Send size={16} />
+                                    Post Reply
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => {
+                                      setReplyingToPostId(null)
+                                      setInstructorReplyContent('')
+                                    }}
+                                  >
+                                    Cancel
+                                  </Button>
+                                </div>
+                              </div>
+                            ) : (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => setReplyingToPostId(post.postId)}
+                                className="gap-2 hover:bg-primary hover:text-primary-foreground transition-all duration-300"
+                              >
+                                <Send size={16} />
+                                Reply as Instructor
+                              </Button>
+                            )}
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
