@@ -6,6 +6,8 @@ import SignupPage from './pages/Auth/SignupPage'
 import StudentDashboard from './pages/Student/StudentDashboard'
 import StudentCourses from './pages/Student/StudentCourse'
 import StudentProfile from './pages/Student/StudentProfile'
+import StudentCourseDetails from './pages/Student/StudentCourseDetails'
+import StudentLearnPage from './pages/Student/StudentLearnPage'
 import InstructorDashboard from './pages/Instructor/InstructorDashboard'
 import InstructorCourses from './pages/Instructor/InstructorCouse'
 import InstructorProfile from './pages/Instructor/InstructorProfile'
@@ -33,6 +35,8 @@ function AppLayout() {
           <Route path='/student/dashboard' element={isAuthenticated && user?.role === 'student' ? <StudentDashboard /> : <Navigate to="/login" replace />} />
           <Route path='/student/courses' element={isAuthenticated && user?.role === 'student' ? <StudentCourses /> : <Navigate to="/login" replace />} />
           <Route path='/student/profile' element={isAuthenticated && user?.role === 'student' ? <StudentProfile /> : <Navigate to="/login" replace />} />
+          <Route path='/student/course/:courseId' element={isAuthenticated && user?.role === 'student' ? <StudentCourseDetails /> : <Navigate to="/login" replace />} />
+          <Route path='/student/course/:courseId/learn' element={isAuthenticated && user?.role === 'student' ? <StudentLearnPage /> : <Navigate to="/login" replace />} />
           <Route path='/admin/dashboard' element={isAuthenticated && user?.role === 'admin' ? <AdminDashboard /> : <Navigate to="/login" replace />} />
           <Route path='/admin/courses' element={isAuthenticated && user?.role === 'admin' ? <AdminCourses /> : <Navigate to="/login" replace />} />   
           <Route path='/admin/profile' element={isAuthenticated && user?.role === 'admin' ? <AdminProfile /> : <Navigate to="/login" replace />} />   

@@ -58,3 +58,6 @@ This is the frontend for the SikaiVerse Project. It's a React application built 
 6. **2026/01/16**
     - created the discussion page for instructor and admin also integrated to fetch the course list and the discussion post and replies 
     - the insertion and like and other things has not been created yet
+
+7. **2026/01/29**
+    - created the learning page for the student learning in new tab and also integrated the new endpoint for this pages
