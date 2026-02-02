@@ -12,7 +12,9 @@ import {
   getCourseSidebar,
   getLessonDetails,
   getEnrolledDetails,
-  isEnrolled as checkIsEnrolled, // ✅ NEW API
+  isEnrolled as checkIsEnrolled,
+  setLessonInProgress,
+  setLessonCompleted,
   type SidebarModule,
   type LessonDetails,
   type EnrolledCourseDetails,
@@ -90,7 +92,7 @@ export default function CourseLearnPage() {
     setExpandedModules(newExpanded)
   }
 
-  // ✅ Updated loadLesson: checks enrollment FIRST
+  // ✅ Updated loadLesson: checks enrollment FIRST and sets in progress
   const loadLesson = async (lessonId: number) => {
     if (!user?.id) {
       alert('User not found. Please login again.')
@@ -109,7 +111,7 @@ export default function CourseLearnPage() {
       setCurrentLessonId(null)
 
       alert(enrolledRes.message || 'Not Enrolled or Invalid')
-      navigate('/courses') // you can change this route if needed
+      navigate('/courses')
       return
     }
 
@@ -117,6 +119,20 @@ export default function CourseLearnPage() {
     const res = await getLessonDetails({ lessonId })
     setCurrentLesson(res.data)
     setCurrentLessonId(lessonId)
+
+    // ✅ 3) If lesson status is 'not_started', set it to 'in_progress'
+    if (res.data.status === 'not_started') {
+      try {
+        await setLessonInProgress({
+          userId: user.id,
+          lessonId,
+        })
+        // Update local state to reflect the change
+        setCurrentLesson(prev => (prev ? { ...prev, status: 'in_progress' } : prev))
+      } catch (err) {
+        console.error('Failed to set lesson in progress:', err)
+      }
+    }
   }
 
   useEffect(() => {
@@ -165,10 +181,37 @@ export default function CourseLearnPage() {
     await loadLesson(lessonId)
   }
 
+  // Helper function to refresh sidebar
+  const refreshSidebar = async () => {
+    if (numericCourseId) {
+      try {
+        const sidebarRes = await getCourseSidebar({ courseId: numericCourseId })
+        setSidebar(sidebarRes.data || [])
+      } catch (err) {
+        console.error('Failed to refresh sidebar:', err)
+      }
+    }
+  }
+
   // UI only
-  const handleMarkComplete = () => {
-    if (!currentLesson) return
-    setCurrentLesson(prev => (prev ? { ...prev, status: 'completed' } : prev))
+  const handleMarkComplete = async () => {
+    if (!currentLesson || !user?.id || !currentLessonId) return
+    
+    try {
+      // Call API to set lesson as completed
+      await setLessonCompleted({
+        userId: user.id,
+        lessonId: currentLessonId,
+      })
+      // Update local state to reflect the change
+      setCurrentLesson(prev => (prev ? { ...prev, status: 'completed' } : prev))
+      
+      // Refresh sidebar to get updated lesson statuses
+      await refreshSidebar()
+    } catch (err) {
+      console.error('Failed to mark lesson complete:', err)
+      alert('Failed to mark lesson as complete')
+    }
   }
 
   // Check if user has token in localStorage (for new tab scenario)
@@ -190,7 +233,7 @@ export default function CourseLearnPage() {
       <div className="min-h-screen bg-background py-12 px-4 flex items-center justify-center">
         <div className="text-center">
           <p className="text-muted-foreground mb-4">Invalid course id</p>
-          <Button onClick={() => navigate('/courses')}>Back to Courses</Button>
+          <Button onClick={() => navigate('/student/courses')}>Back to Courses</Button>
         </div>
       </div>
     )
@@ -211,7 +254,7 @@ export default function CourseLearnPage() {
         {/* Header */}
         <div className="p-4 border-b border-border">
           <button
-            onClick={() => navigate(`/courses/${numericCourseId}`)}
+            onClick={() => navigate(`/student/course/${numericCourseId}`)}
             className="flex items-center gap-2 text-primary hover:underline mb-2"
           >
             <ArrowLeft size={16} />
@@ -257,16 +300,24 @@ export default function CourseLearnPage() {
                   {module.lessons.map((lesson, index) => (
                     <button
                       key={lesson.lessonId}
-                      onClick={() => handleLessonClick(lesson.lessonId, module.moduleId)}
+                      onClick={() => {
+                        // Only allow interaction if lesson is not completed
+                        if (lesson.status !== 'completed') {
+                          handleLessonClick(lesson.lessonId, module.moduleId)
+                        }
+                      }}
+                      disabled={lesson.status === 'completed'}
                       className={`w-full p-3 pl-8 text-left hover:bg-muted transition-colors ${
                         currentLessonId === lesson.lessonId
                           ? 'bg-primary/10 border-r-2 border-primary'
                           : ''
-                      }`}
+                      } ${lesson.status === 'completed' ? 'opacity-75 cursor-default' : 'cursor-pointer'}`}
                     >
                       <div className="flex items-center gap-3">
                         <div className="flex-shrink-0 w-6 h-6 rounded-full bg-background flex items-center justify-center text-xs">
-                          {currentLessonId === lesson.lessonId ? (
+                          {lesson.status === 'completed' ? (
+                            <span className="text-green-600">✓</span>
+                          ) : currentLessonId === lesson.lessonId ? (
                             <span className="text-blue-600">⚡</span>
                           ) : (
                             <span className="text-muted-foreground">{index + 1}</span>
@@ -280,6 +331,9 @@ export default function CourseLearnPage() {
                             }`}
                           >
                             {lesson.lessonTitle}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {lesson.duration} min
                           </p>
                         </div>
                       </div>
@@ -451,7 +505,21 @@ export default function CourseLearnPage() {
 
                   {nextLessonId ? (
                     <Button
-                      onClick={() => {
+                      onClick={async () => {
+                        // Mark current lesson as completed before moving to next
+                        if (currentLesson?.status !== 'completed' && user?.id && currentLessonId) {
+                          try {
+                            await setLessonCompleted({
+                              userId: user.id,
+                              lessonId: currentLessonId,
+                            })
+                            // Refresh sidebar after completing
+                            await refreshSidebar()
+                          } catch (err) {
+                            console.error('Failed to mark lesson complete:', err)
+                          }
+                        }
+                        
                         const next = lessonOrder.find(x => x.lessonId === nextLessonId)
                         if (next) handleLessonClick(next.lessonId, next.moduleId)
                       }}
@@ -461,7 +529,7 @@ export default function CourseLearnPage() {
                       <ChevronRight size={18} />
                     </Button>
                   ) : (
-                    <Button onClick={() => navigate(`/courses/${numericCourseId}`)} variant="outline">
+                    <Button onClick={() => navigate(`/student/course/${numericCourseId}`)} variant="outline">
                       Back to Course
                     </Button>
                   )}
@@ -473,7 +541,7 @@ export default function CourseLearnPage() {
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center">
               <p className="text-muted-foreground mb-4">No lessons available</p>
-              <Button onClick={() => navigate(`/courses/${numericCourseId}`)}>
+              <Button onClick={() => navigate(`/student/course/${numericCourseId}`)}>
                 Back to Course
               </Button>
             </div>

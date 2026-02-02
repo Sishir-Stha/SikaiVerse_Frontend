@@ -61,3 +61,11 @@ This is the frontend for the SikaiVerse Project. It's a React application built 
 
 7. **2026/01/29**
     - created the learning page for the student learning in new tab and also integrated the new endpoint for this pages
+
+8. **2026/01/31**
+    - added new endpoint for the inprogress and completed of the lesson 
+    - changes few UI like after completed tick mark in side bar etc
+
+9. **2026/02/02**
+    - created new UI for admin and instructor course page and edit course page
+    - api endpoint to be added later

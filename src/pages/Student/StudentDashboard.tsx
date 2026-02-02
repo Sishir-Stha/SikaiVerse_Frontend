@@ -150,7 +150,7 @@ useEffect(() => {
                             <span className="text-sm text-muted-foreground">
                               {course.totalModules} modules
                             </span>
-                            <Link to={`/courses/${course.courseId}`}>
+                            <Link to={`/student/course/${course.courseId}`}>
                               <Button variant="outline" size="sm">Continue</Button>
                             </Link>
                           </div>

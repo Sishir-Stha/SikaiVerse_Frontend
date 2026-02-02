@@ -54,6 +54,8 @@ export interface GetCourseInfoResponse {
 export interface SidebarLesson {
   lessonId: number
   lessonTitle: string
+  duration: number
+  status: 'not_started' | 'in_progress' | 'completed'
 }
 
 export interface SidebarModule {
@@ -75,10 +77,10 @@ export interface LessonDetails {
   lessonTitle: string
   description: string
   duration: number
-  contentType: string   // comes directly from API
+  contentType: string   
   lessonContent: string
   lessonData: string
-  status: string        // comes directly from API
+  status: string        
 }
 
 export interface GetLessonDetailsRequest {
@@ -90,16 +92,15 @@ export interface GetLessonDetailsResponse {
   data: LessonDetails
 }
 
-export interface IsEnrolledRequest {
+export interface LessonProgressRequest {
   userId: number
   lessonId: number
 }
 
-export interface IsEnrolledResponse {
+export interface LessonProgressResponse {
   success: string
   message?: string
 }
-
 
 
 const API_BASE_URL = 'http://localhost:8440/api/v1'
@@ -186,8 +187,8 @@ export const getLessonDetails = async (
 }
 
 export const isEnrolled = async (
-  request: IsEnrolledRequest
-): Promise<IsEnrolledResponse> => {
+  request:LessonProgressRequest
+): Promise<LessonProgressResponse> => {
   const response = await fetch(`${API_BASE_URL}/student/isEnrolled`, {
     method: 'POST',
     headers: getAuthHeaders(),
@@ -196,6 +197,39 @@ export const isEnrolled = async (
 
   if (!response.ok) {
     throw new Error('Failed to check enrollment status')
+  }
+
+  return response.json()
+}
+
+export const setLessonInProgress = async (
+  request: LessonProgressRequest
+): Promise<LessonProgressResponse> => {
+  const response = await fetch(`${API_BASE_URL}/course/setInProgress`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(request),
+  })
+
+  if (!response.ok) {
+    throw new Error('Failed to set lesson in progress')
+  }
+
+  return response.json()
+}
+
+
+export const setLessonCompleted = async (
+  request: LessonProgressRequest
+): Promise<LessonProgressResponse> => {
+  const response = await fetch(`${API_BASE_URL}/course/setCompleted`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(request),
+  })
+
+  if (!response.ok) {
+    throw new Error('Failed to set lesson completed')
   }
 
   return response.json()
