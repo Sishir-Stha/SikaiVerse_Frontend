@@ -69,3 +69,9 @@ This is the frontend for the SikaiVerse Project. It's a React application built 
 9. **2026/02/02**
     - created new UI for admin and instructor course page and edit course page
     - api endpoint to be added later
+
+10. **2026/02/0**
+    - created the User page for the admin panel and integrated with already exsisting api
+    - made few UI changes to match 
+    - Edit panel changes and insert edit and delete soon to come
+    
