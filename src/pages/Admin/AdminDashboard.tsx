@@ -26,7 +26,7 @@ export default function AdminDashboard() {
 
   // Dashboard stats
   const [dashboardData, setDashboardData] =
-    useState<GetAdminDashboardResponse['data'] | null>(null)
+  useState<GetAdminDashboardResponse['data'] | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 

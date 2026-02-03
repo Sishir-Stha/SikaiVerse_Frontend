@@ -17,7 +17,8 @@ import AdminDashboard from './pages/Admin/AdminDashboard'
 import AdminCourses from './pages/Admin/AdminCourses'
 import AdminProfile from './pages/Admin/AdminProfile'
 import AdminDiscussion from './pages/Admin/AdminDisussion'
-import AdminCourseEditPage from './pages/Admin/AdminCourseEditPage'
+import AdminUser from './pages/Admin/AdminUser' 
+import AdminCourseEditPage from './pages/Admin/AdminCourseEdit'
 import BrowseCoursesPage from './pages/Landing/BrowseCoursesPage'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import Chatbot from './components/Chatbot'
@@ -43,6 +44,7 @@ function AppLayout() {
           <Route path='/admin/courses' element={isAuthenticated && user?.role === 'admin' ? <AdminCourses /> : <Navigate to="/login" replace />} />   
           <Route path='/admin/profile' element={isAuthenticated && user?.role === 'admin' ? <AdminProfile /> : <Navigate to="/login" replace />} />   
           <Route path='/admin/course/edit/:courseId' element={isAuthenticated && user?.role === 'admin' ? <AdminCourseEditPage /> : <Navigate to="/login" replace />} />
+          <Route path='/admin/users' element={isAuthenticated && user?.role === 'admin' ? <AdminUser /> : <Navigate to="/login" replace />} />
           <Route path='/admin/discussions' element={isAuthenticated && user?.role === 'admin' ? <AdminDiscussion /> : <Navigate to="/login" replace />} />
           <Route path='/instructor/dashboard' element={isAuthenticated && user?.role === 'instructor' ? <InstructorDashboard /> : <Navigate to="/login" replace />} />
           <Route path='/instructor/courses' element={isAuthenticated && user?.role === 'instructor' ? <InstructorCourses /> : <Navigate to="/login" replace />} />

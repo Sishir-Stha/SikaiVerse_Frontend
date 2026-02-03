@@ -1,5 +1,18 @@
 export type LessonContentType = 'document' | 'video' | 'link' | 'photo' | 'message'
 
+export interface User {
+  id: string
+  name: string
+  email: string
+  phone?: string
+  address?: string
+  role: 'student' | 'admin' | 'instructor'
+  avatar?: string
+  enrolledCourses?: string[]
+  createdAt?: string
+   status?: string
+}
+
 export interface Lesson {
   id: string
   moduleId: string

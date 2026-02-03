@@ -7,8 +7,10 @@ interface User {
   id?: string
   name: string
   email: string
-  role: 'Student' | 'Admin' | 'student' | 'admin'
+  role: 'Student' | 'Admin' | 'student' | 'admin' | 'Instructor' | 'instructor'
   status: 'Active' | 'Inactive' | 'active' | 'inactive'
+  phoneNumber?: string
+  address?: string
 }
 
 interface UserEditPanelProps {
@@ -24,6 +26,8 @@ const EMPTY_USER: User = {
   email: '',
   role: 'student',
   status: 'active',
+  phoneNumber: '',
+  address: '',
 }
 
 export default function UserEditPanel({
@@ -120,6 +124,7 @@ export default function UserEditPanel({
             >
               <option value="student">Student</option>
               <option value="admin">Admin</option>
+              <option value="instructor">Instructor</option>
             </select>
           </div>
 
@@ -135,6 +140,29 @@ export default function UserEditPanel({
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>
             </select>
+          </div>
+
+          {/* Phone Number */}
+          <div>
+            <label className="block text-sm font-medium mb-2">Phone Number</label>
+            <Input
+              type="tel"
+              name="phoneNumber"
+              value={formData.phoneNumber || ''}
+              onChange={handleChange}
+              placeholder="Enter phone number"
+            />
+          </div>
+
+          {/* Address */}
+          <div>
+            <label className="block text-sm font-medium mb-2">Address</label>
+            <Input
+              name="address"
+              value={formData.address || ''}
+              onChange={handleChange}
+              placeholder="Enter address"
+            />
           </div>
 
           {/* Buttons */}
