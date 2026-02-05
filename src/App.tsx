@@ -1,6 +1,8 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'sonner'
 import LandingPage from './pages/Landing/LandingPage'
+import BrowseCoursesPage from './pages/Landing/BrowseCoursesPage'
+import CourseDetailPage from './pages/Landing/CourseDetailsPage'
 import LoginPage from './pages/Auth/LoginPage'
 import SignupPage from './pages/Auth/SignupPage'
 import StudentDashboard from './pages/Student/StudentDashboard'
@@ -19,7 +21,6 @@ import AdminProfile from './pages/Admin/AdminProfile'
 import AdminDiscussion from './pages/Admin/AdminDisussion'
 import AdminUser from './pages/Admin/AdminUser' 
 import AdminCourseEditPage from './pages/Admin/AdminCourseEdit'
-import BrowseCoursesPage from './pages/Landing/BrowseCoursesPage'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import Chatbot from './components/Chatbot'
 
@@ -33,8 +34,10 @@ function AppLayout() {
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/browse" element={<BrowseCoursesPage />} />
+          <Route path="/course-details/:courseId" element={<CourseDetailPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<SignupPage />} />
+
           <Route path='/student/dashboard' element={isAuthenticated && user?.role === 'student' ? <StudentDashboard /> : <Navigate to="/login" replace />} />
           <Route path='/student/courses' element={isAuthenticated && user?.role === 'student' ? <StudentCourses /> : <Navigate to="/login" replace />} />
           <Route path='/student/profile' element={isAuthenticated && user?.role === 'student' ? <StudentProfile /> : <Navigate to="/login" replace />} />

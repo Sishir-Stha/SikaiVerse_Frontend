@@ -13,6 +13,16 @@ export interface EnrolledModule {
   noOfLesson: number
 }
 
+export interface EnrollCourseRequest {
+  userId: number
+  courseId: number
+}
+
+export interface EnrollCourseResponse {
+  success: string
+}
+
+
 export interface EnrolledCourseDetails {
   category: string
   completionPercentage: number
@@ -230,6 +240,25 @@ export const setLessonCompleted = async (
 
   if (!response.ok) {
     throw new Error('Failed to set lesson completed')
+  }
+
+  return response.json()
+}
+
+export const enrollCourse = async (
+  request: EnrollCourseRequest
+): Promise<EnrollCourseResponse> => {
+  const response = await fetch(
+    `${API_BASE_URL}/course/enroll`,
+    {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(request),
+    }
+  )
+
+  if (!response.ok) {
+    throw new Error('Failed to enroll in course')
   }
 
   return response.json()
