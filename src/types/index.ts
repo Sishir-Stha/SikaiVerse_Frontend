@@ -77,3 +77,29 @@ export interface Progress {
   progress: number
   lastAccessed: string
 }
+
+
+export interface DiscussionReply {
+  id: string
+  postId: string
+  userId: string
+  userName: string
+  userAvatar?: string
+  content: string
+  createdAt: string
+  likes: number
+  isAdmin?: boolean
+}
+
+export interface DiscussionPost {
+  id: string
+  courseId: string
+  userId: string
+  userName: string
+  userAvatar?: string
+  title: string
+  content: string
+  createdAt: string
+  likes: number
+  replies: DiscussionReply[]
+}

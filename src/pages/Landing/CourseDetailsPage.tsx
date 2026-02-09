@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { Button } from '../../components/ui/button'
 import { Card, CardContent } from '../../components/ui/card'
 import { Badge } from '../../components/ui/badge'
-import { getCourseDetails, enrollCourse } from '../../api/Landing/landing'
+import { getCourseDetails, enrollCourse, isCourseEnrolled } from '../../api/Landing/landing'
 import type { CourseDetails, CourseModule } from '../../api/Landing/landing'
 import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../hooks/use-toast'
@@ -59,7 +59,23 @@ export default function CourseDetailPage() {
 
         if (response.success === 'true') {
           setCourseDetails(response.data)
-          setIsEnrolled(false)
+          
+          // Check if user is enrolled (only if authenticated)
+          if (isAuthenticated && user) {
+            try {
+              const enrollmentResponse = await isCourseEnrolled({
+                userId: user.id,
+                courseId: parsedCourseId,
+              })
+              console.log('Enrollment check response:', enrollmentResponse)
+              setIsEnrolled(enrollmentResponse.success === 'true')
+            } catch (enrollErr) {
+              console.error('Error checking enrollment status:', enrollErr)
+              setIsEnrolled(false)
+            }
+          } else {
+            setIsEnrolled(false)
+          }
         } else {
           console.error('Response success is not true:', response.success)
           error('Failed to load course details')
@@ -75,7 +91,7 @@ export default function CourseDetailPage() {
     }
 
     loadCourseData()
-  }, [courseId])
+  }, [courseId, isAuthenticated, user])
 
   const handleEnrollClick = () => {
     if (!isAuthenticated) {
@@ -110,7 +126,7 @@ export default function CourseDetailPage() {
       
       // After successful enrollment, redirect to course learn page after a brief delay
       setTimeout(() => {
-        navigate(`/student/course/${courseId}/learn`)
+        navigate(`/student/course/${courseId}`)
       }, 1500)
     } catch (err) {
       console.error('Enrollment failed:', err)

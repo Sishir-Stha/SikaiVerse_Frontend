@@ -10,6 +10,7 @@ import {
 } from '../../api/Student/studentCourse'
 import { useToast } from '../../hooks/use-toast'
 import TopBar from '../../components/TopBar'
+
 import {
   ArrowLeft,
   Star,
@@ -326,7 +327,7 @@ export default function StudentCourseDetailPage() {
                       Share this course
                     </button>
                     <button
-                      onClick={() => navigate(`/student/course/${courseId}/forum`)}
+                      onClick={() => navigate(`/student/course/${courseId}/discussions`)}
                       className="w-full text-left text-sm text-blue-600 hover:underline flex items-center gap-2"
                     >
                       <MessageCircle size={16} />

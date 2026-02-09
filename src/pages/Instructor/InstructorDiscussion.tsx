@@ -16,6 +16,7 @@ import {
   type GetCourseListRequest,
   type GetDiscussionRequest
 } from '../../api/Instructor/instructorDiscussion'
+import { likeDiscussion, likeReply } from '../../api/Shared/all/discussion'
 
 export default function InstructorDiscussionsPage() {
   const navigate = useNavigate()
@@ -31,6 +32,10 @@ export default function InstructorDiscussionsPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [replyingToPostId, setReplyingToPostId] = useState<number | null>(null)
   const [instructorReplyContent, setInstructorReplyContent] = useState('')
+  const [likingPostId, setLikingPostId] = useState<number | null>(null)
+  const [likingReplyId, setLikingReplyId] = useState<number | null>(null)
+  const [likedPosts, setLikedPosts] = useState<Set<number>>(new Set())
+  const [likedReplies, setLikedReplies] = useState<Set<number>>(new Set())
 
   // Load courses on mount
   useEffect(() => {
@@ -113,6 +118,93 @@ export default function InstructorDiscussionsPage() {
     } catch (err) {
       console.error('Failed to post reply:', err)
       error('Failed to post reply')
+    }
+  }
+
+  // Handle like post
+  const handleLikePost = async (postId: number) => {
+    const isLiked = likedPosts.has(postId)
+    
+    if (isLiked) {
+      // Unlike - just remove from UI
+      setLikedPosts(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(postId)
+        return newSet
+      })
+      success('Post unliked!')
+      return
+    }
+    
+    // Like - call API
+    setLikingPostId(postId)
+    try {
+      const response = await likeDiscussion({ postId })
+      if (response.success === 'true') {
+        setDiscussions(prevDiscussions =>
+          prevDiscussions.map(post =>
+            post.postId === postId
+              ? { ...post, postLikes: post.postLikes + 1 }
+              : post
+          )
+        )
+        setLikedPosts(prev => new Set(prev).add(postId))
+        success('Post liked!')
+      } else {
+        error('Failed to like post')
+      }
+    } catch (err) {
+      console.error('Failed to like post:', err)
+      error('Failed to like post')
+    } finally {
+      setLikingPostId(null)
+    }
+  }
+
+  // Handle like reply
+  const handleLikeReply = async (postId: number, replyId: number) => {
+    const isLiked = likedReplies.has(replyId)
+    
+    if (isLiked) {
+      // Unlike - just remove from UI
+      setLikedReplies(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(replyId)
+        return newSet
+      })
+      success('Reply unliked!')
+      return
+    }
+    
+    // Like - call API
+    setLikingReplyId(replyId)
+    try {
+      const response = await likeReply({ replyId })
+      if (response.success === 'true') {
+        setDiscussions(prevDiscussions =>
+          prevDiscussions.map(post =>
+            post.postId === postId
+              ? {
+                  ...post,
+                  repliesDataList: post.repliesDataList?.map(reply =>
+                    reply.replyId === replyId
+                      ? { ...reply, replyLikes: reply.replyLikes + 1 }
+                      : reply
+                  ) || []
+                }
+              : post
+          )
+        )
+        setLikedReplies(prev => new Set(prev).add(replyId))
+        success('Reply liked!')
+      } else {
+        error('Failed to like reply')
+      }
+    } catch (err) {
+      console.error('Failed to like reply:', err)
+      error('Failed to like reply')
+    } finally {
+      setLikingReplyId(null)
     }
   }
 
@@ -339,10 +431,20 @@ export default function InstructorDiscussionsPage() {
                                 {/* Post Title */}
                                 <CardTitle className="text-lg mt-3">{post.postTitle}</CardTitle>
                               </div>
-                              <div className="flex items-center gap-2 text-muted-foreground">
-                                <Heart size={18} className="text-red-400" />
+                              <button
+                                onClick={() => handleLikePost(post.postId)}
+                                disabled={likingPostId === post.postId}
+                                className="flex items-center gap-2 text-muted-foreground hover:text-red-400 transition-colors duration-200 cursor-pointer disabled:opacity-50"
+                              >
+                                <Heart
+                                  size={18}
+                                  className={`transition-all duration-200 ${
+                                    likingPostId === post.postId ? 'animate-pulse' : ''
+                                  } text-red-400`}
+                                  fill={likedPosts.has(post.postId) ? 'currentColor' : 'none'}
+                                />
                                 <span className="text-sm">{post.postLikes}</span>
-                              </div>
+                              </button>
                             </div>
                           </CardHeader>
 
@@ -379,10 +481,20 @@ export default function InstructorDiscussionsPage() {
                                             {formatDate(reply.replyCreatedAt)}
                                           </p>
                                         </div>
-                                        <div className="flex items-center gap-1 text-muted-foreground">
-                                          <Heart size={14} className="text-red-400" />
+                                        <button
+                                          onClick={() => handleLikeReply(post.postId, reply.replyId)}
+                                          disabled={likingReplyId === reply.replyId}
+                                          className="flex items-center gap-1 text-muted-foreground hover:text-red-400 transition-colors duration-200 cursor-pointer disabled:opacity-50"
+                                        >
+                                          <Heart
+                                            size={14}
+                                            className={`transition-all duration-200 ${
+                                              likingReplyId === reply.replyId ? 'animate-pulse' : ''
+                                            } text-red-400`}
+                                            fill={likedReplies.has(reply.replyId) ? 'currentColor' : 'none'}
+                                          />
                                           <span className="text-xs">{reply.replyLikes}</span>
-                                        </div>
+                                        </button>
                                       </div>
                                       <p className="text-sm text-foreground">{reply.replyContent}</p>
                                     </div>

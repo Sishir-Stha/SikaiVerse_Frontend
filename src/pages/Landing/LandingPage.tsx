@@ -176,7 +176,7 @@ export default function LandingPage() {
                           {course.duration} hrs
                         </span>
                       </div>
-                      <Link to={`/course/${course.courseId}`}>
+                      <Link to={`/course-details/${course.courseId}`}>
                         <Button size="sm" className="w-full">
                           View Course
                         </Button>

@@ -53,6 +53,17 @@ export interface GetCourseDetailsResponse {
   data: CourseDetails
 }
 
+export interface IsEnrolledRequest {
+  userId: number
+  courseId: number
+}
+
+export interface IsEnrolledResponse {
+  success: 'true' | 'false'
+  message?: string
+}
+
+
 export interface GetCourseListResponse {
   success: string
   data: CourseItem[]
@@ -167,6 +178,30 @@ export const enrollCourse = async (
   if (result.success === 'false') {
     throw new Error(result.message || 'Enroll course failed')
   }
+
+  return result
+}
+
+
+export const isCourseEnrolled = async (
+  request: IsEnrolledRequest
+): Promise<IsEnrolledResponse> => {
+  const response = await fetch(
+    `${API_BASE_URL}/course/isEnrolled`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(request),
+    }
+  )
+
+  if (!response.ok) {
+    throw new Error('Failed to check enrollment status')
+  }
+
+  const result: IsEnrolledResponse = await response.json()
 
   return result
 }
