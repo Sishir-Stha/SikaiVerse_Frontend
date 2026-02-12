@@ -76,17 +76,17 @@ export default function Sidebar() {
           {
             label: 'Create Course',
             icon: PlusCircle,
-            path: isAdmin ? '/admin/courses/create' : '/instructor/courses/create',
+            path: isAdmin ? '/courses/create' : '/courses/create',
           },
           {
             label: 'Create Module',
             icon: PlusCircle,
-            path: isAdmin ? '/admin/modules/create' : '/instructor/modules/create',
+            path: isAdmin ? '/modules/create' : '/modules/create',
           },
           {
             label: 'Create Lesson',
             icon: PlusCircle,
-            path: isAdmin ? '/admin/lessons/create' : '/instructor/lessons/create',
+            path: isAdmin ? '/lessons/create' : '/lessons/create',
           },
         ]
       : []

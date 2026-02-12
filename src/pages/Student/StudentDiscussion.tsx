@@ -18,7 +18,7 @@ import {
 } from '../../api/Shared/all/discussion'
 import { MessageCircle, Heart, Reply, Send, Loader2 } from 'lucide-react'
 
-export default function DiscussionForumPage() {
+export default function StudentDiscussionPage() {
   const { courseId } = useParams<{ courseId: string }>()
   const { user } = useAuth()
   const { success, error: showError } = useToast()
@@ -31,8 +31,12 @@ export default function DiscussionForumPage() {
   const [replyingTo, setReplyingTo] = useState<number | null>(null)
   const [replyContent, setReplyContent] = useState('')
   const [isReplying, setIsReplying] = useState(false)
-  const [likingPostIds, setLikingPostIds] = useState<Set<number>>(new Set())
-  const [likingReplyIds, setLikingReplyIds] = useState<Set<number>>(new Set())
+
+  // Like state — matching instructor logic
+  const [likingPostId, setLikingPostId] = useState<number | null>(null)
+  const [likingReplyId, setLikingReplyId] = useState<number | null>(null)
+  const [likedPosts, setLikedPosts] = useState<Set<number>>(new Set())
+  const [likedReplies, setLikedReplies] = useState<Set<number>>(new Set())
 
   const loadDiscussions = async () => {
     if (!courseId) return
@@ -142,20 +146,39 @@ export default function DiscussionForumPage() {
     }
   }
 
+  // Like post — toggle logic matching instructor page
   const handleLikePost = async (postId: number) => {
-    if (likingPostIds.has(postId)) return
+    const isLiked = likedPosts.has(postId)
 
-    setLikingPostIds((prev) => new Set(prev).add(postId))
+    if (isLiked) {
+      // Unlike — remove from UI locally
+      setLikedPosts(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(postId)
+        return newSet
+      })
+      setPosts(prev =>
+        prev.map(p =>
+          p.postId === postId
+            ? { ...p, postLikes: Math.max(0, p.postLikes - 1) }
+            : p
+        )
+      )
+      return
+    }
 
+    // Like — call API
+    setLikingPostId(postId)
     try {
       const response = await likeDiscussion({ postId })
 
       if (response.success === 'true') {
-        setPosts((prev) =>
-          prev.map((p) =>
+        setPosts(prev =>
+          prev.map(p =>
             p.postId === postId ? { ...p, postLikes: p.postLikes + 1 } : p
           )
         )
+        setLikedPosts(prev => new Set(prev).add(postId))
       } else {
         showError(response.message || 'Failed to like post.')
       }
@@ -165,29 +188,50 @@ export default function DiscussionForumPage() {
         err instanceof Error ? err.message : 'Failed to like post.'
       )
     } finally {
-      setLikingPostIds((prev) => {
-        const next = new Set(prev)
-        next.delete(postId)
-        return next
-      })
+      setLikingPostId(null)
     }
   }
 
-  const handleLikeReply = async (replyId: number, postId: number) => {
-    if (likingReplyIds.has(replyId)) return
+  // Like reply — toggle logic matching instructor page
+  const handleLikeReply = async (postId: number, replyId: number) => {
+    const isLiked = likedReplies.has(replyId)
 
-    setLikingReplyIds((prev) => new Set(prev).add(replyId))
+    if (isLiked) {
+      // Unlike — remove from UI locally
+      setLikedReplies(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(replyId)
+        return newSet
+      })
+      setPosts(prev =>
+        prev.map(p =>
+          p.postId === postId
+            ? {
+                ...p,
+                repliesDataList: p.repliesDataList.map(r =>
+                  r.replyId === replyId
+                    ? { ...r, replyLikes: Math.max(0, r.replyLikes - 1) }
+                    : r
+                ),
+              }
+            : p
+        )
+      )
+      return
+    }
 
+    // Like — call API
+    setLikingReplyId(replyId)
     try {
       const response = await likeReply({ replyId })
 
       if (response.success === 'true') {
-        setPosts((prev) =>
-          prev.map((p) =>
+        setPosts(prev =>
+          prev.map(p =>
             p.postId === postId
               ? {
                   ...p,
-                  repliesDataList: p.repliesDataList.map((r) =>
+                  repliesDataList: p.repliesDataList.map(r =>
                     r.replyId === replyId
                       ? { ...r, replyLikes: r.replyLikes + 1 }
                       : r
@@ -196,6 +240,7 @@ export default function DiscussionForumPage() {
               : p
           )
         )
+        setLikedReplies(prev => new Set(prev).add(replyId))
       } else {
         showError(response.message || 'Failed to like reply.')
       }
@@ -205,11 +250,7 @@ export default function DiscussionForumPage() {
         err instanceof Error ? err.message : 'Failed to like reply.'
       )
     } finally {
-      setLikingReplyIds((prev) => {
-        const next = new Set(prev)
-        next.delete(replyId)
-        return next
-      })
+      setLikingReplyId(null)
     }
   }
 
@@ -334,13 +375,17 @@ export default function DiscussionForumPage() {
                     </div>
                     <button
                       onClick={() => handleLikePost(post.postId)}
-                      disabled={likingPostIds.has(post.postId)}
-                      className="flex items-center gap-1.5 text-muted-foreground hover:text-red-500 transition-colors disabled:opacity-50 cursor-pointer"
+                      disabled={likingPostId === post.postId}
+                      className="flex items-center gap-2 text-muted-foreground hover:text-red-400 transition-colors duration-200 cursor-pointer disabled:opacity-50"
                     >
-                      {likingPostIds.has(post.postId) ? (
-                        <Loader2 size={18} className="animate-spin" />
+                      {likingPostId === post.postId ? (
+                        <Loader2 size={18} className="animate-spin text-red-400" />
                       ) : (
-                        <Heart size={18} />
+                        <Heart
+                          size={18}
+                          className="text-red-400 transition-all duration-200"
+                          fill={likedPosts.has(post.postId) ? 'currentColor' : 'none'}
+                        />
                       )}
                       <span className="text-sm">{post.postLikes}</span>
                     </button>
@@ -389,18 +434,26 @@ export default function DiscussionForumPage() {
                             </p>
                             <button
                               onClick={() =>
-                                handleLikeReply(reply.replyId, post.postId)
+                                handleLikeReply(post.postId, reply.replyId)
                               }
-                              disabled={likingReplyIds.has(reply.replyId)}
-                              className="flex items-center gap-1 text-muted-foreground hover:text-red-500 transition-colors disabled:opacity-50 shrink-0 ml-2 cursor-pointer"
+                              disabled={likingReplyId === reply.replyId}
+                              className="flex items-center gap-1 text-muted-foreground hover:text-red-400 transition-colors duration-200 shrink-0 ml-2 cursor-pointer disabled:opacity-50"
                             >
-                              {likingReplyIds.has(reply.replyId) ? (
+                              {likingReplyId === reply.replyId ? (
                                 <Loader2
                                   size={14}
-                                  className="animate-spin"
+                                  className="animate-spin text-red-400"
                                 />
                               ) : (
-                                <Heart size={14} />
+                                <Heart
+                                  size={14}
+                                  className="text-red-400 transition-all duration-200"
+                                  fill={
+                                    likedReplies.has(reply.replyId)
+                                      ? 'currentColor'
+                                      : 'none'
+                                  }
+                                />
                               )}
                               <span className="text-xs">
                                 {reply.replyLikes}

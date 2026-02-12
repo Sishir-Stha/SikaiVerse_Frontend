@@ -110,7 +110,7 @@ useEffect(() => {
           <CardContent>
             <div className="grid md:grid-cols-3 gap-6">
               {[
-                { title: 'Create Course', icon: '➕', href: '/instructor/courses/create' },
+                { title: 'Create Course', icon: '➕', href: '/courses/create' },
                 { title: 'Add Module', icon: '👁️', href: '/instructor/modules/create' },
                 { title: 'Create Lesson', icon: '📖', href: '/instructor/lessons/create' },
               ].map((action, i) => (

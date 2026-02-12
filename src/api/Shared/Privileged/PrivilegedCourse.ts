@@ -1,5 +1,3 @@
-// ../../api/Shared/Privileged/PrivilegedCourse.ts
-
 const API_BASE_URL = 'http://localhost:8440/api/v1'
 
 // ==========================================
@@ -162,6 +160,160 @@ export const getInstructorList = async (): Promise<GetInstructorListResponse> =>
 
   if (!response.ok) {
     throw new Error(`Failed to fetch instructor list: ${response.status} ${response.statusText}`)
+  }
+
+  return response.json()
+}
+
+// ==========================================
+// ADD COURSE ENDPOINT
+// ==========================================
+
+export interface AddCourseRequest {
+  title: string
+  description: string
+  instructorId: number
+  category: string
+  level: string
+  duration: number
+  image: string
+  rating: number
+  totalStudents: number
+}
+
+export interface AddCourseSuccessResponse {
+  success: "true"
+}
+
+export interface AddCourseErrorResponse {
+  success: "false"
+  message: string
+}
+
+export type AddCourseResponse =
+  | AddCourseSuccessResponse
+  | AddCourseErrorResponse
+
+export const isAddCourseSuccess = (
+  response: AddCourseResponse
+): response is AddCourseSuccessResponse => {
+  return response.success === "true"
+}
+
+export const addCourse = async (
+  request: AddCourseRequest
+): Promise<AddCourseResponse> => {
+  const response = await fetch(
+    `${API_BASE_URL}/shared/privileged/add/Course`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(request),
+    }
+  )
+
+  if (!response.ok) {
+    throw new Error(`Failed to add course: ${response.status} ${response.statusText}`)
+  }
+
+  return response.json()
+}
+
+// ==========================================
+// ADD MODULE ENDPOINT
+// ==========================================
+
+export interface AddModuleRequest {
+  courseId: number
+  moduleTitle: string
+  description: string
+}
+
+export interface AddModuleSuccessResponse {
+  success: "true"
+}
+
+export interface AddModuleErrorResponse {
+  success: "false"
+  message: string
+}
+
+export type AddModuleResponse =
+  | AddModuleSuccessResponse
+  | AddModuleErrorResponse
+
+export const isAddModuleSuccess = (
+  response: AddModuleResponse
+): response is AddModuleSuccessResponse => {
+  return response.success === "true"
+}
+
+export const addModule = async (
+  request: AddModuleRequest
+): Promise<AddModuleResponse> => {
+  const response = await fetch(
+    `${API_BASE_URL}/shared/privileged/add/Module`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(request),
+    }
+  )
+
+  if (!response.ok) {
+    throw new Error(`Failed to add module: ${response.status} ${response.statusText}`)
+  }
+
+  return response.json()
+}
+
+// ==========================================
+// DELETE COURSE ENDPOINT
+// ==========================================
+
+export interface DeleteCourseRequest {
+  courseId: number
+}
+
+export interface DeleteCourseSuccessResponse {
+  success: "true"
+}
+
+export interface DeleteCourseErrorResponse {
+  success: "false"
+  message: string
+}
+
+export type DeleteCourseResponse =
+  | DeleteCourseSuccessResponse
+  | DeleteCourseErrorResponse
+
+export const isDeleteCourseSuccess = (
+  response: DeleteCourseResponse
+): response is DeleteCourseSuccessResponse => {
+  return response.success === "true"
+}
+
+export const deleteCourse = async (
+  request: DeleteCourseRequest
+): Promise<DeleteCourseResponse> => {
+  const response = await fetch(
+    `${API_BASE_URL}/shared/privileged/deleteCourse`,
+    {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(request),
+    }
+  )
+
+  if (!response.ok) {
+    throw new Error(`Failed to delete course: ${response.status} ${response.statusText}`)
   }
 
   return response.json()
