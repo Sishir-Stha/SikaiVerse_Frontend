@@ -272,6 +272,72 @@ export const addModule = async (
 }
 
 // ==========================================
+// ADD LESSON ENDPOINT (MULTIPART FORM DATA)
+// ==========================================
+
+export interface AddLessonRequest {
+  moduleId: number
+  lessonTitle: string
+  lessonContent: string
+  description: string
+  contentType?: string
+  contentData?: string
+  fileData?: File
+  duration?: number
+}
+
+export interface AddLessonSuccessResponse {
+  success: "true"
+}
+
+export interface AddLessonErrorResponse {
+  success: "false"
+  message: string
+}
+
+export type AddLessonResponse =
+  | AddLessonSuccessResponse
+  | AddLessonErrorResponse
+
+export const isAddLessonSuccess = (
+  response: AddLessonResponse
+): response is AddLessonSuccessResponse => {
+  return response.success === "true"
+}
+
+export const addLesson = async (
+  request: AddLessonRequest
+): Promise<AddLessonResponse> => {
+  const formData = new FormData()
+
+  formData.append('moduleId', String(request.moduleId))
+  formData.append('lessonTitle', request.lessonTitle)
+  formData.append('lessonContent', request.lessonContent)
+  formData.append('description', request.description)
+  formData.append('contentType', request.contentType ?? 'link')
+  formData.append('contentData', request.contentData ?? '')
+  formData.append('duration', String(request.duration ?? 0))
+
+  if (request.fileData) {
+    formData.append('fileData', request.fileData)
+  }
+
+  const response = await fetch(
+    `${API_BASE_URL}/shared/privileged/add/Lesson`,
+    {
+      method: 'POST',
+      body: formData,
+    }
+  )
+
+  if (!response.ok) {
+    throw new Error(`Failed to add lesson: ${response.status} ${response.statusText}`)
+  }
+
+  return response.json()
+}
+
+// ==========================================
 // DELETE COURSE ENDPOINT
 // ==========================================
 

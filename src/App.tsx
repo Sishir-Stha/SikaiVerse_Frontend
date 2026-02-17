@@ -5,6 +5,7 @@ import BrowseCoursesPage from './pages/Landing/BrowseCoursesPage'
 import CourseDetailPage from './pages/Landing/CourseDetailsPage'
 import CoursesCreate from './pages/Courses/CourseCreate'
 import ModulesCreate from './pages/Courses/ModuleCreate'
+import LessonsCreate from './pages/Courses/LessonCreate'
 import LoginPage from './pages/Auth/LoginPage'
 import SignupPage from './pages/Auth/SignupPage'
 import StudentDashboard from './pages/Student/StudentDashboard'
@@ -42,6 +43,7 @@ function AppLayout() {
           <Route path="/register" element={<SignupPage />} />
           <Route path="/courses/create" element={  isAuthenticated && (user?.role === 'instructor' || user?.role === 'admin')? <CoursesCreate /> : <Navigate to="/login" replace />} />
           <Route path="/modules/create" element={  isAuthenticated && (user?.role === 'instructor' || user?.role === 'admin')? <ModulesCreate /> : <Navigate to="/login" replace />} />
+          <Route path="/lessons/create" element={  isAuthenticated && (user?.role === 'instructor' || user?.role === 'admin')? <LessonsCreate /> : <Navigate to="/login" replace />} />
           <Route path='/student/dashboard' element={isAuthenticated && user?.role === 'student' ? <StudentDashboard /> : <Navigate to="/login" replace />} />
           <Route path='/student/courses' element={isAuthenticated && user?.role === 'student' ? <StudentCourses /> : <Navigate to="/login" replace />} />
           <Route path='/student/profile' element={isAuthenticated && user?.role === 'student' ? <StudentProfile /> : <Navigate to="/login" replace />} />

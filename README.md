@@ -84,14 +84,19 @@ This is the frontend for the SikaiVerse Project. It's a React application built 
     - created the new endpoint to like the reply and post of the dicussion inthe admin and isntructor
     
 
-12. **2026/02/0**
+12. **2026/02/14**
     - created the Disscussion page for student also they can now like the post and reply
     - the posting question and reply is also there 
 
-13. **2026/02/0**
+13. **2026/02/16**
     - created the new course and module add page and also integreated the endpoints or api
     - added the delete endpoint to delte the courses in the instucotr and admin
     - need to improve the ui for module creation
+
+14. **2026/02/18**
+    - created the new lesson page and make few ui changes
+    - make UI logic changes for instructor and admin 
+    - added new endpoint for lessons
 
 
     
