@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Button } from '../../components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/card'
 import { Badge } from '../../components/ui/badge'
@@ -11,6 +11,7 @@ import { getCourseInfo, type CourseInfo } from '../../api/Student/studentCourse'
 
 export default function CoursesPage() {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const [courses, setCourses] = useState<CourseInfo[]>([])
   const [filteredCourses, setFilteredCourses] = useState<CourseInfo[]>([])
   const [searchTerm, setSearchTerm] = useState('')
@@ -44,6 +45,10 @@ export default function CoursesPage() {
     setFilteredCourses(filtered)
   }, [searchTerm, courses])
 
+  const handleContinueCourse = (courseId: number) => {
+    navigate(`/student/course/${courseId}`)
+  }
+
   return (
     <div className="flex min-h-screen bg-background">
       {/* Sidebar */}
@@ -74,12 +79,13 @@ export default function CoursesPage() {
           {/* Courses Grid */}
           {isLoading ? (
             <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
               <p className="text-muted-foreground">Loading courses...</p>
             </div>
           ) : filteredCourses.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-muted-foreground">No courses found</p>
-              <Link to="/courses">
+              <p className="text-muted-foreground mb-4">No courses found</p>
+              <Link to="/browse">
                 <Button>Browse Courses</Button>
               </Link>
             </div>
@@ -108,7 +114,9 @@ export default function CoursesPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      <p className="text-sm text-muted-foreground line-clamp-2">{course.description ?? 'No description'}</p>
+                      <p className="text-sm text-muted-foreground line-clamp-2">
+                        {course.description ?? 'No description'}
+                      </p>
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-muted-foreground">{course.totalLessons} lessons</span>
                         <span className="text-yellow-500">★ {course.rating}</span>
@@ -117,9 +125,12 @@ export default function CoursesPage() {
                         {Math.floor(course.totalDuration / 60)}h {course.totalDuration % 60}m • {course.totalModules} modules
                       </div>
                       <div className="flex gap-2">
-                        <Link to={`/courses/${course.courseId}`} className="flex-1">
-                          <Button className="w-full">Continue</Button>
-                        </Link>
+                        <Button 
+                          className="w-full"
+                          onClick={() => handleContinueCourse(course.courseId)}
+                        >
+                          Continue
+                        </Button>
                       </div>
                     </div>
                   </CardContent>

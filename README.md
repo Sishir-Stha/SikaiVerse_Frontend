@@ -58,3 +58,45 @@ This is the frontend for the SikaiVerse Project. It's a React application built 
 6. **2026/01/16**
     - created the discussion page for instructor and admin also integrated to fetch the course list and the discussion post and replies 
     - the insertion and like and other things has not been created yet
+
+7. **2026/01/29**
+    - created the learning page for the student learning in new tab and also integrated the new endpoint for this pages
+
+8. **2026/01/31**
+    - added new endpoint for the inprogress and completed of the lesson 
+    - changes few UI like after completed tick mark in side bar etc
+
+9. **2026/02/02**
+    - created new UI for admin and instructor course page and edit course page
+    - api endpoint to be added later
+
+10. **2026/02/06**
+    - created the User page for the admin panel and integrated with already exsisting api
+    - made few UI changes to match 
+    - Edit panel changes and insert edit and delete soon to come
+
+11. **2026/02/09**
+    - created the Course Details page for enrollment and entered the enrollement logics but still need work only half complete
+    - made few UI changes to match 
+    - still error which need to solve
+
+12. **2026/02/10**
+    - created the new endpoint to like the reply and post of the dicussion inthe admin and isntructor
+    
+
+12. **2026/02/14**
+    - created the Disscussion page for student also they can now like the post and reply
+    - the posting question and reply is also there 
+
+13. **2026/02/16**
+    - created the new course and module add page and also integreated the endpoints or api
+    - added the delete endpoint to delte the courses in the instucotr and admin
+    - need to improve the ui for module creation
+
+14. **2026/02/18**
+    - created the new lesson page and make few ui changes
+    - make UI logic changes for instructor and admin 
+    - added new endpoint for lessons
+
+
+    

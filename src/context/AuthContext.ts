@@ -17,6 +17,7 @@ interface User {
 interface AuthContextType {
   isAuthenticated: boolean
   user: User | null
+  token: string | null
   login: (credentials: LoginRequest) => Promise<'admin' | 'student' | 'instructor'>
   signup: (userData: SignupRequest) => Promise<void>
   logout: () => void
@@ -41,27 +42,31 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [user, setUser] = useState<User | null>(null)
+  const [token, setToken] = useState<string | null>(null)
 
   useEffect(() => {
-    // Checking the token stored
-    const token = localStorage.getItem('token')
+    // Checking the token stored on app mount
+    const storedToken = localStorage.getItem('token')
     const storedUser = localStorage.getItem('user')
-    const loginTime = localStorage.getItem('loginTime')
+    const tokenExpiry = localStorage.getItem('tokenExpiry')
     
-    if (token && storedUser && loginTime) {
-      //checking if the token in expired or not
+    if (storedToken && storedUser && tokenExpiry) {
+      // Check if token is expired (token expires in 1 hour = 3600000 ms)
       const currentTime = Date.now()
-      const tokenAge = currentTime - parseInt(loginTime)
-      const thirtyMinutes = 30 * 60 * 1000
+      const expiryTime = parseInt(tokenExpiry)
       
-      if (tokenAge < thirtyMinutes) {
+      if (currentTime < expiryTime) {
         setIsAuthenticated(true)
         setUser(JSON.parse(storedUser))
+        setToken(storedToken)
       } else {
-        // if Token is expired, clearing the stored data
+        // Token is expired, clear everything
         localStorage.removeItem('token')
         localStorage.removeItem('user')
-        localStorage.removeItem('loginTime')
+        localStorage.removeItem('tokenExpiry')
+        setIsAuthenticated(false)
+        setUser(null)
+        setToken(null)
       }
     }
   }, [])
@@ -76,11 +81,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           role: response.data.role,
           email: credentials.email
         }
+        
+        // Token expires in 1 hour (3600000 ms)
+        const expiryTime = Date.now() + 60 * 60 * 1000
+        
         setIsAuthenticated(true)
         setUser(userData)
+        setToken(response.data.token)
+        
+        // Store in localStorage for persistence across tabs/refreshes
         localStorage.setItem('token', response.data.token)
         localStorage.setItem('user', JSON.stringify(userData))
-        localStorage.setItem('loginTime', Date.now().toString())
+        localStorage.setItem('tokenExpiry', expiryTime.toString())
+        
         return response.data.role
       } else {
         throw new Error('Login failed')
@@ -104,21 +117,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const handleLogout = () => {
     setIsAuthenticated(false)
     setUser(null)
+    setToken(null)
     localStorage.removeItem('token')
     localStorage.removeItem('user')
-    localStorage.removeItem('loginTime')
+    localStorage.removeItem('tokenExpiry')
   }
 
   const value: AuthContextType = {
     isAuthenticated,
     user,
+    token,
     login: handleLogin,
     signup: handleSignup,
     logout: handleLogout,
-    updateProfile: function (updates: Partial<User>): Promise<void> {
+    updateProfile: function (_updates: Partial<User>): Promise<void> {
       throw new Error('Function not implemented.')
     },
-    resetPassword: function (newPassword: string): Promise<void> {
+    resetPassword: function (_newPassword: string): Promise<void> {
       throw new Error('Function not implemented.')
     }
   }

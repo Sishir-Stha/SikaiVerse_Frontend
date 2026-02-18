@@ -6,11 +6,11 @@ import { Badge } from '../../components/ui/badge'
 import { Input } from '../../components/ui/input'
 import { useAuth } from '../../context/AuthContext'
 import Sidebar from '../../components/Sidebar'
-import { getCourseInfo,  type CourseInfo } from '../../api/Admin/adminCourse'
-import {deleteCourse, isDeleteCourseSuccess,} from '../../api/Shared/Privileged/PrivilegedCourse'
+import { getCourseInfo, type CourseInfo } from '../../api/Instructor/instructorCourse'
+import { deleteCourse, isDeleteCourseSuccess } from '../../api/Shared/Privileged/PrivilegedCourse'
 import { BookOpen, Plus, Edit2, Eye, Trash2, Search, AlertTriangle, Loader2 } from 'lucide-react'
 
-export default function AdminCoursesPage() {
+export default function InstructorCoursesPage() {
   const { user } = useAuth()
   const navigate = useNavigate()
   const [courses, setCourses] = useState<CourseInfo[]>([])
@@ -57,7 +57,7 @@ export default function AdminCoursesPage() {
   }
 
   const handleEditCourse = (course: CourseInfo) => {
-    navigate(`/admin/course/edit/${course.courseId}`)
+    navigate(`/instructor/course/edit/${course.courseId}`)
   }
 
   const handleDeleteClick = (course: CourseInfo) => {
@@ -122,7 +122,7 @@ export default function AdminCoursesPage() {
                 <BookOpen size={32} />
                 Manage Courses
               </h1>
-              <p className="text-muted-foreground">View, edit, and manage all courses</p>
+              <p className="text-muted-foreground">View, edit, and manage your courses</p>
             </div>
             <Button onClick={() => navigate('/courses/create')} className="gap-2">
               <Plus size={20} />
@@ -147,7 +147,7 @@ export default function AdminCoursesPage() {
           ) : filteredCourses.length === 0 ? (
             <Card>
               <CardContent className="pt-6 text-center">
-                <p className="text-muted-foreground mb-4">No courses found</p>
+                <p className="text-muted-foreground mb-4">No courses yet</p>
                 <Button onClick={() => navigate('/courses/create')}>
                   Create First Course
                 </Button>
@@ -285,20 +285,9 @@ export default function AdminCoursesPage() {
                     </Button>
                     <Button
                       variant="outline"
-                      onClick={() => navigate(`/admin/courses/${selectedCourse.courseId}`)}
+                      onClick={() => navigate(`/instructor/courses/${selectedCourse.courseId}`)}
                     >
                       View Full Details
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      onClick={() => {
-                        handleDeleteClick(selectedCourse)
-                        setSelectedCourse(null)
-                      }}
-                      className="gap-2"
-                    >
-                      <Trash2 size={16} />
-                      Delete
                     </Button>
                     <Button
                       variant="outline"

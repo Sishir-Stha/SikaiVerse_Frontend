@@ -26,7 +26,7 @@ export default function AdminDashboard() {
 
   // Dashboard stats
   const [dashboardData, setDashboardData] =
-    useState<GetAdminDashboardResponse['data'] | null>(null)
+  useState<GetAdminDashboardResponse['data'] | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -226,7 +226,7 @@ export default function AdminDashboard() {
           <CardContent>
             <div className="grid md:grid-cols-3 gap-6">
               {[
-                { title: 'Create Course', icon: '➕', href: '/Admin/courses/create' },
+                { title: 'Create Course', icon: '➕', href: '/courses/create' },
                 { title: 'Add Module', icon: '👁️', href: '/Admin/modules/create' },
                 { title: 'Create Lesson', icon: '📖', href: '/Admin/lessons/create' },
               ].map((action, i) => (
