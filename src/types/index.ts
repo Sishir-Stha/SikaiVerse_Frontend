@@ -43,6 +43,15 @@ export interface ChatMessage {
   role: 'user' | 'assistant'
   content: string
   timestamp: string
+  courses?: Array<{
+    name: string
+    description?: string
+    level?: string
+    rating?: number
+    category?: string
+    instructor?: string
+    duration?: string
+  }>
 }
 
 export interface Course {

@@ -2,9 +2,24 @@ import { useState, useRef, useEffect } from 'react'
 import { MessageCircle, X, Send } from 'lucide-react'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
-import { mockChatbot } from '../lib/mockChatbot'
+import { CourseCard } from './CourseCard'
+import { askAI } from '../api/ChatBot/ai'
 import { useChatbot } from '../context/ChatbotContext'
+import { parseCoursesFromResponse, isCourseResponse } from '../lib/courseParser'
 import type { ChatMessage } from '../types'
+
+const FIXED_RESPONSES: { [key: string]: string } = {
+  hi: 'Hi there! 👋 How can I assist you today?',
+  hello: 'Hello! 🎉 Welcome to Sikai Verse. What would you like to learn about?',
+  hey: 'Hey! 👋 I\'m here to help. What can I do for you?',
+  'how are you': 'I\'m doing great, thank you for asking! 😊 How can I help you with your learning journey?',
+  thanks: 'You\'re welcome! 😊 Feel free to ask if you need anything else.',
+  'thank you': 'You\'re welcome! 😊 Feel free to ask if you need anything else.',
+  bye: 'Goodbye! 👋 Great learning with you!',
+  'good bye': 'Goodbye! 👋 Great learning with you!',
+  ok: 'Got it! Let me know if you need anything else.',
+  'okay': 'Got it! Let me know if you need anything else.',
+}
 
 export default function Chatbot() {
   const { isOpen, setIsOpen } = useChatbot()
@@ -43,16 +58,62 @@ export default function Chatbot() {
     setIsLoading(true)
 
     try {
-      const response = await mockChatbot(input) // api to be intgrated
+      // Check if input matches any fixed responses (case-insensitive)
+      const lowercaseInput = input.toLowerCase().trim()
+      const fixedResponse = FIXED_RESPONSES[lowercaseInput]
+
+      let response: string
+      let courses = undefined
+
+      if (fixedResponse) {
+        // Use fixed response for common greetings
+        response = fixedResponse
+      } else {
+        // Call AI endpoint for other prompts
+        const aiResponse = await askAI({ prompt: input })
+
+        if (aiResponse.courses && aiResponse.courses.length > 0) {
+          courses = aiResponse.courses.map(course => ({
+            name: course.title,
+            description: course.description,
+            level: course.level,
+            rating: course.rating,
+            category: course.category,
+            duration: course.duration_hours != null ? `${course.duration_hours}h` : undefined,
+          }))
+          response = 'Here are the courses related to your query:'
+        } else if (aiResponse.response) {
+          response = aiResponse.response
+
+          if (isCourseResponse(input)) {
+            const parsedCourses = parseCoursesFromResponse(response)
+            if (parsedCourses && parsedCourses.length > 0) {
+              courses = parsedCourses
+              response = 'Here are the courses related to your query:'
+            }
+          }
+        } else {
+          response = aiResponse.message || 'Sorry, I could not find relevant course recommendations.'
+        }
+      }
+
       const assistantMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
         content: response,
         timestamp: new Date().toISOString(),
+        courses,
       }
       setMessages(prev => [...prev, assistantMessage])
     } catch (error) {
       console.error('Chatbot error:', error)
+      const errorMessage: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: 'Sorry, I encountered an error. Please try again.',
+        timestamp: new Date().toISOString(),
+      }
+      setMessages(prev => [...prev, errorMessage])
     } finally {
       setIsLoading(false)
     }
@@ -99,7 +160,16 @@ export default function Chatbot() {
                       : 'bg-muted text-muted-foreground'
                   }`}
                 >
-                  {message.content}
+                  <p className="text-sm">{message.content}</p>
+
+                  {/* Course Cards */}
+                  {message.courses && message.courses.length > 0 && (
+                    <div className="mt-3 max-h-64 overflow-y-auto">
+                      {message.courses.map((course, idx) => (
+                        <CourseCard key={idx} course={course} />
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

@@ -98,5 +98,8 @@ This is the frontend for the SikaiVerse Project. It's a React application built 
     - make UI logic changes for instructor and admin 
     - added new endpoint for lessons
 
+15. **2026/03/30**
+    - added or changes the chatbot ai endpoint and changed the chatbot working
+
 
     
