@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import type { ReactNode } from 'react'
-import { login, signup } from '../api/Auth/auth'
-import type { LoginRequest, LoginResponse, SignupRequest } from '../api/Auth/auth'
+import { login, signup } from '../api/auth/auth'
+import type { LoginRequest, LoginResponse, SignupRequest } from '../api/auth/auth'
 
 interface User {
   id: number
